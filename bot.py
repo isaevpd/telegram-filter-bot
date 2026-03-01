@@ -98,9 +98,13 @@ def check_channel_post(message):
         print(f"✅ Not spam\n")
 
 
-@bot.message_handler(func=lambda m: True)
+@bot.message_handler(func=lambda m: True, content_types=['text', 'photo'])
 def check_message(message):
     """Check group messages for spam and ban users"""
+    # Skip if this is a channel post (already handled by channel_post_handler)
+    if message.chat.type == 'channel':
+        return
+
     text = message.text or message.caption
     if not text:
         print(f"📨 Non-text message from chat {message.chat.id}")
