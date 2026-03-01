@@ -41,7 +41,10 @@ Financial spam includes:
 
 Message to analyze: {text}
 
-Reply with JSON only: {{"is_spam": true/false, "confidence": 0-100}}"""
+Reply with JSON only. Use this exact format:
+{{"is_spam": true/false, "confidence": <integer from 0 to 100>}}
+
+Example: {{"is_spam": true, "confidence": 95}}"""
 
     try:
         response = model.generate_content(prompt)
