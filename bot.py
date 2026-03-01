@@ -8,7 +8,9 @@ import os
 import json
 from dotenv import load_dotenv
 import telebot
+from telebot.types import Update
 import google.generativeai as genai
+from fastapi import FastAPI, Request, Response
 
 # Load environment variables
 load_dotenv()
@@ -16,11 +18,14 @@ load_dotenv()
 # Configuration
 BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+WEBHOOK_URL = os.getenv('WEBHOOK_URL')  # Set this in Railway
 
 # Initialize
 bot = telebot.TeleBot(BOT_TOKEN)
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-2.5-flash')
+
+app = FastAPI()
 
 print("🤖 Bot starting...")
 
@@ -138,34 +143,36 @@ def check_message(message):
         print(f"✅ Not spam\n")
 
 
-if __name__ == "__main__":
-    import time
-
+@app.on_event("startup")
+async def on_startup():
+    """Set webhook on startup"""
     me = bot.get_me()
-    print(f"✅ Bot @{me.username} is running!")
+    print(f"✅ Bot @{me.username} is starting!")
     print(f"Bot ID: {me.id}")
-    print("\nMonitoring for messages...")
-    print("If you don't see messages, check:")
-    print("1. Bot is admin in the channel")
-    print("2. For groups: disable Privacy Mode via @BotFather")
-    print("\nWaiting for messages...\n")
 
-    # Drop pending updates to prevent conflicts
-    print("Clearing webhook...")
+    if not WEBHOOK_URL:
+        print("❌ ERROR: WEBHOOK_URL environment variable not set!")
+        return
+
+    webhook_url = f"{WEBHOOK_URL}/{BOT_TOKEN}"
+    print(f"Setting webhook to: {webhook_url}")
     bot.remove_webhook()
+    bot.set_webhook(url=webhook_url)
+    print("✅ Webhook set successfully!\n")
 
-    # Retry logic for 409 conflicts during deployment
-    max_retries = 3
-    for attempt in range(max_retries):
-        try:
-            print(f"Starting polling (attempt {attempt + 1}/{max_retries})...\n")
-            bot.infinity_polling(skip_pending=True)
-            break
-        except Exception as e:
-            if "409" in str(e) and attempt < max_retries - 1:
-                wait_time = 10 * (attempt + 1)
-                print(f"⚠️  Conflict detected, retrying in {wait_time}s...")
-                time.sleep(wait_time)
-            else:
-                print(f"❌ Error: {e}")
-                raise
+
+@app.post(f"/{BOT_TOKEN}")
+async def webhook(request: Request):
+    """Handle incoming Telegram updates"""
+    if request.headers.get('content-type') == 'application/json':
+        json_string = await request.body()
+        update = Update.de_json(json_string.decode('utf-8'))
+        bot.process_new_updates([update])
+        return Response(status_code=200)
+    return Response(status_code=403)
+
+
+@app.get("/")
+async def health():
+    """Health check endpoint"""
+    return {"status": "ok", "bot": "running"}
