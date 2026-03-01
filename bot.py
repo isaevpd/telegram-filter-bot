@@ -118,4 +118,7 @@ if __name__ == "__main__":
     print("1. Bot is admin in the channel")
     print("2. For groups: disable Privacy Mode via @BotFather")
     print("\nWaiting for messages...\n")
-    bot.infinity_polling()
+
+    # Drop pending updates to prevent conflicts
+    bot.remove_webhook()
+    bot.infinity_polling(skip_pending=True)
