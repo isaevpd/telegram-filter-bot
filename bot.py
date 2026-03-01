@@ -100,7 +100,7 @@ def check_channel_post(message):
 
 @bot.message_handler(func=lambda m: True)
 def check_message(message):
-    """Log all incoming messages (groups/DMs)"""
+    """Check group messages for spam and ban users"""
     text = message.text or message.caption
     if not text:
         print(f"📨 Non-text message from chat {message.chat.id}")
@@ -114,8 +114,24 @@ def check_message(message):
     print(f"📨 NEW MESSAGE")
     print(f"Chat: {chat_title} ({chat_type})")
     print(f"User: {user} (ID: {message.from_user.id})")
-    print(f"Message: {text}")
-    print(f"{'='*60}\n")
+    print(f"Message: {text[:100]}...")
+    print(f"{'='*60}")
+
+    if is_spam(text):
+        print(f"🚫 SPAM detected!")
+
+        try:
+            # Delete the message
+            bot.delete_message(message.chat.id, message.message_id)
+            print(f"✅ Deleted spam message")
+
+            # Ban the user
+            bot.ban_chat_member(message.chat.id, message.from_user.id)
+            print(f"🔨 Banned user: {user} (ID: {message.from_user.id})\n")
+        except Exception as e:
+            print(f"⚠️  Error: {e}\n")
+    else:
+        print(f"✅ Not spam\n")
 
 
 if __name__ == "__main__":
