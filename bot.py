@@ -110,6 +110,8 @@ def check_message(message):
 
 
 if __name__ == "__main__":
+    import time
+
     me = bot.get_me()
     print(f"✅ Bot @{me.username} is running!")
     print(f"Bot ID: {me.id}")
@@ -120,5 +122,21 @@ if __name__ == "__main__":
     print("\nWaiting for messages...\n")
 
     # Drop pending updates to prevent conflicts
-    bot.remove_webhook()
-    bot.infinity_polling(skip_pending=True)
+    print("Clearing webhook...")
+    bot.remove_webhook(drop_pending_updates=True)
+
+    # Retry logic for 409 conflicts during deployment
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            print(f"Starting polling (attempt {attempt + 1}/{max_retries})...\n")
+            bot.infinity_polling(skip_pending=True)
+            break
+        except Exception as e:
+            if "409" in str(e) and attempt < max_retries - 1:
+                wait_time = 10 * (attempt + 1)
+                print(f"⚠️  Conflict detected, retrying in {wait_time}s...")
+                time.sleep(wait_time)
+            else:
+                print(f"❌ Error: {e}")
+                raise
