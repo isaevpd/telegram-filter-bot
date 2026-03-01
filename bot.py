@@ -56,9 +56,15 @@ Reply with JSON only: {{"is_spam": true/false, "confidence": 0-100}}"""
                 result_text = result_text[4:]
 
         result = json.loads(result_text.strip())
-        print(f"AI parsed: is_spam={result.get('is_spam')}, confidence={result.get('confidence')}")
+        confidence = result.get('confidence', 0)
 
-        return result.get('is_spam', False) and result.get('confidence', 0) > 80
+        # Handle both 0-1 scale (0.98) and 0-100 scale (98)
+        if confidence <= 1:
+            confidence = confidence * 100
+
+        print(f"AI parsed: is_spam={result.get('is_spam')}, confidence={confidence}%")
+
+        return result.get('is_spam', False) and confidence > 80
 
     except Exception as e:
         print(f"AI Error: {e}")
