@@ -55,15 +55,16 @@ Example: {{"is_spam": true, "confidence": 95}}"""
         response = model.generate_content(prompt)
         result_text = response.text.strip()
 
-        print(f"AI raw response: {result_text}", flush=True)
-
         # Clean markdown if present
         if '```' in result_text:
             result_text = result_text.split('```')[1]
             if result_text.startswith('json'):
                 result_text = result_text[4:]
 
-        result = json.loads(result_text.strip())
+        result_text = result_text.strip()
+        print(f"AI response: {result_text}", flush=True)
+
+        result = json.loads(result_text)
         confidence = result.get('confidence', 0)
 
         # Handle both 0-1 scale (0.98) and 0-100 scale (98)
