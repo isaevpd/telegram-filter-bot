@@ -55,7 +55,7 @@ Example: {{"is_spam": true, "confidence": 95}}"""
         response = model.generate_content(prompt)
         result_text = response.text.strip()
 
-        print(f"AI raw response: {result_text}")
+        print(f"AI raw response: {result_text}", flush=True)
 
         # Clean markdown if present
         if '```' in result_text:
@@ -70,7 +70,7 @@ Example: {{"is_spam": true, "confidence": 95}}"""
         if confidence <= 1:
             confidence = confidence * 100
 
-        print(f"AI parsed: is_spam={result.get('is_spam')}, confidence={confidence}%")
+        print(f"AI parsed: is_spam={result.get('is_spam')}, confidence={confidence}%", flush=True)
 
         return result.get('is_spam', False) and confidence > 80
 
