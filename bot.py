@@ -132,7 +132,7 @@ if __name__ == "__main__":
 
     # Drop pending updates to prevent conflicts
     print("Clearing webhook...")
-    bot.remove_webhook(drop_pending_updates=True)
+    bot.remove_webhook()
 
     # Retry logic for 409 conflicts during deployment
     max_retries = 3
