@@ -33,7 +33,7 @@ app = FastAPI()
 
 print("🤖 Bot starting...")
 
-# Default spam detection prompt (editable via /prompt command)
+# Default spam detection prompt (editable via /setprompt command)
 SPAM_PROMPT_TEMPLATE = """Analyze this message in ANY language (Russian, English, etc.) and determine if it contains financial spam.
 
 Financial spam includes:
@@ -45,6 +45,10 @@ Financial spam includes:
 - Guaranteed returns claims (гарантированный доход)
 - Referral/affiliate links to trading platforms
 - Asking to buy/sell crypto for cash in person
+- Remote work scams with unrealistic income (требуются, дистанционная работа, от X долларов)
+- MLM/pyramid schemes recruiting (пишите +, даст подробности)
+- Job offers requiring payment or cryptocurrency
+- "Easy money" schemes with age/device requirements
 
 Message to analyze: {text}
 
