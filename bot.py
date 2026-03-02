@@ -88,9 +88,20 @@ def is_spam(text):
         return False
 
 
-@bot.message_handler(commands=['prompt'])
+@bot.message_handler(commands=['viewprompt'])
+def view_prompt_command(message):
+    """View the current spam detection prompt (whitelisted users only)"""
+    # Only allow whitelisted users
+    if message.from_user.id not in WHITELIST_USER_IDS:
+        bot.reply_to(message, "⛔ This command is restricted to authorized users.")
+        return
+
+    bot.reply_to(message, f"📝 Current spam detection prompt:\n\n{SPAM_PROMPT_TEMPLATE}")
+
+
+@bot.message_handler(commands=['setprompt'])
 def handle_prompt_command(message):
-    """View or edit the spam detection prompt (whitelisted users only)"""
+    """Edit the spam detection prompt (whitelisted users only)"""
     global SPAM_PROMPT_TEMPLATE
 
     # Only allow whitelisted users to use this command
@@ -105,14 +116,14 @@ def handle_prompt_command(message):
         msg = bot.reply_to(
             message,
             f"📝 Current spam detection prompt:\n\n{SPAM_PROMPT_TEMPLATE}\n\n"
-            "💡 To update: Copy the text above, edit it, and send it back as a regular message.\n"
+            "💡 Copy the text above, edit it, and send it back as a regular message.\n"
             "⚠️ Make sure to keep the `{{text}}` placeholder!"
         )
         # Register next step handler to wait for the edited prompt
         bot.register_next_step_handler(msg, update_prompt)
         return
 
-    # Or update directly with /prompt <new text>
+    # Or update directly with /setprompt <new text>
     new_prompt = args[1]
 
     # Validate it has {text} placeholder
