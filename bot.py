@@ -19,7 +19,10 @@ load_dotenv()
 BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 WEBHOOK_URL = os.getenv('WEBHOOK_URL')  # Set this in Railway
-OWNER_ID = int(os.getenv('OWNER_ID', '170797199'))  # Your Telegram user ID
+
+# Whitelist of user IDs allowed to use admin commands (comma-separated)
+WHITELIST_STR = os.getenv('WHITELIST_USER_IDS', '170797199')
+WHITELIST_USER_IDS = [int(uid.strip()) for uid in WHITELIST_STR.split(',') if uid.strip()]
 
 # Initialize
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -87,12 +90,12 @@ def is_spam(text):
 
 @bot.message_handler(commands=['prompt'])
 def handle_prompt_command(message):
-    """View or edit the spam detection prompt (owner only)"""
+    """View or edit the spam detection prompt (whitelisted users only)"""
     global SPAM_PROMPT_TEMPLATE
 
-    # Only allow owner to use this command
-    if message.from_user.id != OWNER_ID:
-        bot.reply_to(message, "⛔ This command is restricted to the bot owner.")
+    # Only allow whitelisted users to use this command
+    if message.from_user.id not in WHITELIST_USER_IDS:
+        bot.reply_to(message, "⛔ This command is restricted to authorized users.")
         return
 
     args = message.text.split(maxsplit=1)
