@@ -19,6 +19,7 @@ load_dotenv()
 BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 WEBHOOK_URL = os.getenv('WEBHOOK_URL')  # Set this in Railway
+OWNER_ID = int(os.getenv('OWNER_ID', '170797199'))  # Your Telegram user ID
 
 # Initialize
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -29,10 +30,8 @@ app = FastAPI()
 
 print("🤖 Bot starting...")
 
-
-def is_spam(text):
-    """Check if message is financial spam using Gemini"""
-    prompt = f"""Analyze this message in ANY language (Russian, English, etc.) and determine if it contains financial spam.
+# Default spam detection prompt (editable via /prompt command)
+SPAM_PROMPT_TEMPLATE = """Analyze this message in ANY language (Russian, English, etc.) and determine if it contains financial spam.
 
 Financial spam includes:
 - USDT/cryptocurrency buying/selling for cash (юсдт за наличку, продать usdt)
@@ -50,6 +49,12 @@ Reply with JSON only. Use this exact format:
 {{"is_spam": true/false, "confidence": <integer from 0 to 100>}}
 
 Example: {{"is_spam": true, "confidence": 95}}"""
+
+
+def is_spam(text):
+    """Check if message is financial spam using Gemini"""
+    global SPAM_PROMPT_TEMPLATE
+    prompt = SPAM_PROMPT_TEMPLATE.format(text=text)
 
     try:
         response = model.generate_content(prompt)
@@ -78,6 +83,59 @@ Example: {{"is_spam": true, "confidence": 95}}"""
     except Exception as e:
         print(f"AI Error: {e}")
         return False
+
+
+@bot.message_handler(commands=['prompt'])
+def handle_prompt_command(message):
+    """View or edit the spam detection prompt (owner only)"""
+    global SPAM_PROMPT_TEMPLATE
+
+    # Only allow owner to use this command
+    if message.from_user.id != OWNER_ID:
+        bot.reply_to(message, "⛔ This command is restricted to the bot owner.")
+        return
+
+    args = message.text.split(maxsplit=1)
+
+    # No arguments - show current prompt and wait for edit
+    if len(args) == 1:
+        msg = bot.reply_to(
+            message,
+            f"📝 Current spam detection prompt:\n\n{SPAM_PROMPT_TEMPLATE}\n\n"
+            "💡 To update: Copy the text above, edit it, and send it back as a regular message.\n"
+            "⚠️ Make sure to keep the `{{text}}` placeholder!"
+        )
+        # Register next step handler to wait for the edited prompt
+        bot.register_next_step_handler(msg, update_prompt)
+        return
+
+    # Or update directly with /prompt <new text>
+    new_prompt = args[1]
+
+    # Validate it has {text} placeholder
+    if '{text}' not in new_prompt:
+        bot.reply_to(message, "❌ Error: Prompt must contain `{text}` placeholder for the message to analyze.")
+        return
+
+    SPAM_PROMPT_TEMPLATE = new_prompt
+    bot.reply_to(message, "✅ Spam detection prompt updated successfully!")
+    print(f"🔧 Prompt updated by user {message.from_user.id}")
+
+
+def update_prompt(message):
+    """Update prompt from user's next message"""
+    global SPAM_PROMPT_TEMPLATE
+
+    new_prompt = message.text
+
+    # Validate it has {text} placeholder
+    if '{text}' not in new_prompt:
+        bot.reply_to(message, "❌ Error: Prompt must contain `{text}` placeholder for the message to analyze.")
+        return
+
+    SPAM_PROMPT_TEMPLATE = new_prompt
+    bot.reply_to(message, "✅ Spam detection prompt updated successfully!")
+    print(f"🔧 Prompt updated by user {message.from_user.id}")
 
 
 @bot.channel_post_handler(func=lambda m: True)
