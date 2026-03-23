@@ -153,24 +153,21 @@ def recheck_message(message):
     """Reanalyze a message by replying to it with /recheck (whitelisted users only)"""
     # Only allow whitelisted users
     if message.from_user.id not in WHITELIST_USER_IDS:
-        bot.reply_to(message, "⛔ This command is restricted to authorized users.")
         return
 
     # Must be a reply to another message
     if not message.reply_to_message:
-        bot.reply_to(message, "❌ Please reply to a message you want to recheck.")
         return
 
     target_message = message.reply_to_message
     text = target_message.text or target_message.caption
 
     if not text:
-        bot.reply_to(message, "❌ The message has no text to analyze.")
         return
 
     user = target_message.from_user.username or target_message.from_user.first_name
 
-    bot.reply_to(message, f"🔍 Rechecking message from {user}...")
+    print(f"🔍 Rechecking message from {user}...")
 
     if is_spam(text):
         print(f"🚫 SPAM detected on recheck!")
@@ -182,13 +179,10 @@ def recheck_message(message):
 
             # Ban the user
             bot.ban_chat_member(target_message.chat.id, target_message.from_user.id)
-            bot.reply_to(message, f"✅ Message was spam! Deleted and banned user: {user}")
             print(f"🔨 Banned user: {user} (ID: {target_message.from_user.id})")
         except Exception as e:
-            bot.reply_to(message, f"⚠️ Spam detected but error taking action: {e}")
-            print(f"⚠️ Error: {e}")
+            print(f"⚠️ Spam detected but error taking action: {e}")
     else:
-        bot.reply_to(message, f"✅ Message is not spam.")
         print(f"✅ Not spam on recheck")
 
 
