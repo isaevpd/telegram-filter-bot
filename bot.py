@@ -49,9 +49,12 @@ Financial spam includes:
 - MLM/pyramid schemes recruiting (пишите +, даст подробности)
 - Job offers requiring payment or cryptocurrency
 - "Easy money" schemes with age/device requirements
-- Service advertising spam (веб-сайты, приложения, от А до Z)
-- Generic service offerings asking to PM (пишите в личку, пишите в лс)
-- Unsolicited commercial services in groups
+- Generic service spam with vague offerings (веб-сайты, приложения от А до Z) and "write to PM" with no specifics
+- Messages offering to create websites/apps with minimal details, asking to contact privately
+
+NOT spam:
+- Legitimate local businesses with specific services, locations, and contact info
+- Professional service ads with clear descriptions and websites
 
 <message>
 {text}
