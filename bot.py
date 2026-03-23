@@ -151,6 +151,29 @@ def is_spam(text):
         return False
 
 
+@bot.message_handler(commands=['unban'])
+def unban_user(message):
+    """Unban a user by ID: /unban <user_id> (whitelisted users only)"""
+    # Only allow whitelisted users
+    if message.from_user.id not in WHITELIST_USER_IDS:
+        return
+
+    args = message.text.split()
+
+    if len(args) < 2:
+        print("⚠️ Usage: /unban <user_id>")
+        return
+
+    try:
+        user_id = int(args[1])
+        bot.unban_chat_member(message.chat.id, user_id)
+        print(f"✅ Unbanned user ID: {user_id}")
+    except ValueError:
+        print(f"❌ Invalid user ID: {args[1]}")
+    except Exception as e:
+        print(f"⚠️ Error unbanning user: {e}")
+
+
 @bot.message_handler(commands=['recheck'])
 def recheck_message(message):
     """Reanalyze a message by replying to it with /recheck (whitelisted users only)"""
