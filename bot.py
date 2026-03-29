@@ -45,16 +45,22 @@ Financial spam includes:
 - Guaranteed returns claims (гарантированный доход)
 - Referral/affiliate links to trading platforms
 - Asking to buy/sell crypto for cash in person
-- Remote work scams with unrealistic income (требуются, дистанционная работа, от X долларов)
-- MLM/pyramid schemes recruiting (пишите +, даст подробности)
+- Remote work scams with unrealistic income promises (требуются, дистанционная работа, от 50000 рублей)
+- MLM/pyramid schemes with mass recruiting (пишите +, даст подробности, приглашаю в команду)
 - Job offers requiring payment or cryptocurrency
 - "Easy money" schemes with age/device requirements
-- Generic service spam with vague offerings (веб-сайты, приложения от А до Z) and "write to PM" with no specifics
-- Messages offering to create websites/apps with minimal details, asking to contact privately
+- Generic service spam offering vague web/app development services (веб-сайты, приложения от А до Z) COMBINED with requests to contact privately and no portfolio/website
 
-NOT spam:
+NOT spam (legitimate messages):
+- Simple local sales of items (продаю стол, продаю диван, куплю холодильник)
+- Normal conversation about contacting privately (напишу в личку, пишите в лс)
+- People selling used items or furniture
+- Local service providers with specific offerings
 - Legitimate local businesses with specific services, locations, and contact info
 - Professional service ads with clear descriptions and websites
+- Community members coordinating meetups or discussions
+
+IMPORTANT: Be conservative. Only flag messages as spam if they clearly match the spam patterns above. When in doubt, mark as NOT spam.
 
 <message>
 {text}
@@ -141,7 +147,7 @@ def is_spam(text):
 
         print(f"AI parsed: is_spam={result.get('is_spam')}, confidence={confidence}%", flush=True)
 
-        return result.get('is_spam', False) and confidence > 80
+        return result.get('is_spam', False) and confidence > 90
 
     except json.JSONDecodeError as e:
         print(f"AI Error: Invalid JSON response - {e}")
